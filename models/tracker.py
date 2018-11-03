@@ -21,10 +21,6 @@ class Tracker:
     def getObjects(self):
         return self.objects
 
-    def getPeopleObjects(self):
-        return list(
-            filter(lambda x: x.name == 'person', self.getVisibleObjects()))
-
     def getObjectsOfName(self, objectName):
         return list(filter(lambda x: x.name == objectName, self.objects))
 
@@ -132,14 +128,16 @@ class Tracker:
                         elif closestDist[index] < closestDist[closestIndex]:
                             closestIndex = index
 
-                if closestIndex != -1 and closestDist[closestIndex] < 30:
+                if closestIndex != -1 and closestDist[closestIndex] < 70:
                     self.updateObject(closestTo[closestIndex],
-                                      closestFrom[closestIndex])
+                                    closestFrom[closestIndex])
                     assignedObjects.append(closestFrom[closestIndex])
 
         # assign objects not yet assigned
         for _index, val in enumerate(self.detectedObjects):
             if val.id not in assignedObjects:
+                overlapping = self.overlaps(val)
+                if overlapping == True: continue
                 self.changes = True
                 self.addObject(val)
 
@@ -149,16 +147,22 @@ class Tracker:
                 self.delObject(obj.id)
 
         return self
+    
+    def overlaps(self, compare):
+        for _i, visible in enumerate(self.getVisibleObjects()):
+            if compare.id != visible.id:
+                print(compare.overlap(visible))
+                if compare.overlap(visible) > 50:
+                    return True
+        return False
 
     def debug(self):
         if self.getVisibleObjects() is not None and len(self.getVisibleObjects()) > 0:
             Debug.info('==================================')
-            Debug.info('Visible objects detected:')
             for obj in self.getVisibleObjects():
-                Debug.info('   [{0}] {1} - {2:.0%} |[{3},{4}]'.format(
-                    obj.id, obj.name, obj.score, obj.w, obj.h))
-            
+                Debug.info('   [{}] [{},{} - {},{}]'.format(obj.id, obj.startX(), obj.startY(), obj.w, obj.h))
+                for obj2 in self.getVisibleObjects():
+                    if obj.id == obj2.id: continue
+                    Debug.info('     -> [{}] {}'.format(obj2.id, obj.overlap(obj2)))
             Debug.info('==================================')
-        else:
-            Debug.info('Nothing detected in the frame')
 

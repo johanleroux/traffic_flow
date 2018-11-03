@@ -36,14 +36,17 @@ class Video:
     def releaseCapture(self):
         self.videoCapture.release()
 
-    def drawFrame(self, objects, fps):
-        cv2.putText(self.frame, "{: .2f}fps".format(fps.fps()), (0, 25),
-            cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 1, cv2.LINE_AA)
+    def drawFrame(self, objectTracker, fps):
+        cv2.putText(self.frame, "{:.2f}fps".format(fps.fps()), (0, 15),
+            cv2.FONT_HERSHEY_PLAIN, 1.2, (0, 0, 0), 1, cv2.LINE_AA)
+        
+        cv2.putText(self.frame, "Detected {}".format(objectTracker.ids), (0, 35),
+            cv2.FONT_HERSHEY_PLAIN, 1.2, (0, 0, 0), 1, cv2.LINE_AA)
 
-        if objects is None or len(objects) == 0:
+        if objectTracker.getVisibleObjects() is None or len(objectTracker.getVisibleObjects()) == 0:
             return
 
-        for obj in objects:
+        for obj in objectTracker.getVisibleObjects():
             cv2.rectangle(self.frame, (obj.startX(), obj.startY()),
                           (obj.endX(), obj.endY()), (0, 0, 255), 2)
 

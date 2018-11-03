@@ -5,13 +5,12 @@ from dotenv import load_dotenv
 from imutils.video import FPS
 
 import cv2
-from models.mobilenet import Mobilenet
 from models.haarcascade import Haarcascade
+from models.mobilenet import Mobilenet
 from models.tracker import Tracker
 from models.video import Video
 
 load_dotenv()
-
 
 def main():
     # Initialize FPS Monitor
@@ -46,7 +45,7 @@ def main():
             objectTracker.track(recognisedObjects)
 
             # Debug Object Tracker Data
-            # objectTracker.debug()
+            objectTracker.debug()
 
         # Update Frame Counter
         frameCount += 1
@@ -54,8 +53,10 @@ def main():
         fps.stop()
 
         # Draw Frame
-        video.drawFrame(objectTracker.getVisibleObjects(), fps)
+        video.drawFrame(objectTracker, fps)
         cv2.imshow("Traffic Flow", frame)
+
+        # input("")
 
         # Quit (q) shortcut
         c = cv2.waitKey(1)

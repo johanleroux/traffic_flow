@@ -37,3 +37,14 @@ class Object:
                 and self.endY() > other.startY()):
             return True
         return False
+    
+    def area(self):
+        return (self.endX() - self.startX()) * (self.endY() - self.startY())
+
+    def overlap(self, other):
+        dx = min(self.endX(), other.endX()) - max(self.startX(), other.startX())
+        dy = min(self.endY(), other.endY()) - max(self.startY(), other.startY())
+
+        overlap_area = dx * dy
+
+        return max(overlap_area / self.area(), overlap_area / other.area()) * 100
