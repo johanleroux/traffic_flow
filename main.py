@@ -39,7 +39,8 @@ def main():
         # Detect objects in frame
         if frameCount % frameMod == 0:
             # Detect objects in frame
-            recognisedObjects = objectRecognition.detect(frame)
+            recognisedObjects = objectRecognition.detect(video.fetchRoiFrame())
+            # cv2.imshow("ROI", video.fetchRoiFrame())
 
             # Track objects detected
             objectTracker.track(recognisedObjects)
@@ -53,7 +54,7 @@ def main():
         fps.stop()
 
         # Draw Frame
-        video.drawFrame(objectTracker, fps)
+        video.drawFrame(objectTracker, fps, frameCount)
         cv2.imshow("Traffic Flow", frame)
 
         # input("")

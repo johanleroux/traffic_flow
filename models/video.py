@@ -23,6 +23,9 @@ class Video:
         if r:
             return self.frame
         return None
+    
+    def fetchRoiFrame(self):
+        return self.frame[int(os.getenv("TEST_ROI_Y1")):int(os.getenv("TEST_ROI_Y2")), int(os.getenv("TEST_ROI_X1")):int(os.getenv("TEST_ROI_X2"))]
 
     def fetchFrameWidth(self):
         return self.videoCapture.get(3)
@@ -35,25 +38,59 @@ class Video:
 
     def releaseCapture(self):
         self.videoCapture.release()
+    
+    def fullFrameX(self, point):
+        return int(os.getenv("TEST_ROI_X1")) + point
 
-    def drawFrame(self, objectTracker, fps):
+    def fullFrameY(self, point):
+        return int(os.getenv("TEST_ROI_Y1")) + point
+
+    def drawFrame(self, objectTracker, fps, frameCount):
         cv2.putText(self.frame, "{:.2f}fps".format(fps.fps()), (0, 15),
             cv2.FONT_HERSHEY_PLAIN, 1.2, (0, 0, 0), 1, cv2.LINE_AA)
         
         cv2.putText(self.frame, "Detected {}".format(objectTracker.ids), (0, 35),
             cv2.FONT_HERSHEY_PLAIN, 1.2, (0, 0, 0), 1, cv2.LINE_AA)
 
+        cv2.putText(self.frame, "{}".format(frameCount), (0, 55),
+            cv2.FONT_HERSHEY_PLAIN, 1.2, (0, 0, 0), 1, cv2.LINE_AA)
+
+        # ROI Region
+        cv2.rectangle(
+            self.frame, 
+            (int(os.getenv("TEST_ROI_X1")), int(os.getenv("TEST_ROI_Y1"))),
+            (int(os.getenv("TEST_ROI_X2")), int(os.getenv("TEST_ROI_Y2"))),
+            (0, 255, 0), 
+            1
+        )
+
         if objectTracker.getVisibleObjects() is None or len(objectTracker.getVisibleObjects()) == 0:
             return
 
         for obj in objectTracker.getVisibleObjects():
-            cv2.rectangle(self.frame, (obj.startX(), obj.startY()),
-                          (obj.endX(), obj.endY()), (0, 0, 255), 2)
+            cv2.rectangle(
+                self.frame, 
+                (self.fullFrameX(obj.startX()), self.fullFrameY(obj.startY())),
+                (self.fullFrameX(obj.endX()), self.fullFrameY(obj.endY())),
+                (0, 0, 255),
+                2
+            )
 
-            cv2.circle(self.frame, (obj.x, obj.y), 3, (0, 0, 255), -1)
+            cv2.circle(
+                self.frame, 
+                (self.fullFrameX(obj.x), self.fullFrameY(obj.y)),
+                3, 
+                (0, 0, 255),
+                -1
+            )
 
-            cv2.putText(self.frame, "[{0}] {1}".format(obj.id, obj.name), (obj.startX() + 2, obj.startY() + 20),
-                cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 1, cv2.LINE_AA)
-
-            cv2.putText(self.frame, "{0:.0%}".format(obj.score), (obj.startX() + 2, obj.startY() + 40),
-                cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 0), 1, cv2.LINE_AA)
+            cv2.putText(
+                self.frame, 
+                "[{0}]".format(obj.id), 
+                (self.fullFrameX(obj.startX() + 2), self.fullFrameY(obj.startY() + 20)),
+                cv2.FONT_HERSHEY_PLAIN, 
+                1.5, 
+                (0, 0, 0), 
+                1, 
+                cv2.LINE_AA
+            )
